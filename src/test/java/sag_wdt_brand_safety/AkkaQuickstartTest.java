@@ -26,11 +26,5 @@ public class AkkaQuickstartTest {
 
     @Test
     public void testGreeterActorSendingOfGreeting() {
-//        final TestKit testProbe = new TestKit(system);
-//        final ActorRef helloGreeter = system.actorOf(Greeter.props("Hello", testProbe.getRef()));
-//        helloGreeter.tell(new WhoToGreet("Akka"), ActorRef.noSender());
-//        helloGreeter.tell(new Greet(), ActorRef.noSender());
-//        Printer.Greeting greeting = testProbe.expectMsgClass(Printer.Greeting.class);
-//        assertEquals("Hello, Akka", greeting.message);
     }
 }
