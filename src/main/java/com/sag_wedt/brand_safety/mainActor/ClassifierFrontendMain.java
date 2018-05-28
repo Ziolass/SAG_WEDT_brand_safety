@@ -33,7 +33,7 @@ public class ClassifierFrontendMain {
 
         final ActorRef frontend = system.actorOf(
                 Props.create(ClassifierFrontendActor.class), "frontend");
-        final FiniteDuration interval = Duration.create(2, TimeUnit.SECONDS);
+        final FiniteDuration interval = Duration.create(2, TimeUnit.MINUTES);
         final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
         final ExecutionContext ec = system.dispatcher();
         final AtomicInteger counter = new AtomicInteger();
@@ -42,7 +42,7 @@ public class ClassifierFrontendMain {
                     new TestMessage("hello-" + counter.incrementAndGet()),
                     timeout).onSuccess(new OnSuccess<Object>() {
                 public void onSuccess(Object result) {
-                    System.out.println(result);
+
                 }
             }, ec);
         }, ec);
