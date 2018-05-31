@@ -50,7 +50,6 @@ public class ObserverActor extends AbstractActor {
             if(m.hasRole("frontend")) {
                 frontendActorsNum.getAndIncrement();
             }
-            System.out.pr;
         });
 
         Long all = StreamSupport.stream(cluster.state().getMembers().spliterator(), false).count();
