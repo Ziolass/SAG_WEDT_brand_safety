@@ -42,7 +42,7 @@ public class ClassifierFrontendMain {
                     new TestMessage("hello-" + counter.incrementAndGet()),
                     timeout).onSuccess(new OnSuccess<Object>() {
                 public void onSuccess(Object result) {
-                    System.out.println(result);
+
                 }
             }, ec);
         }, ec);
