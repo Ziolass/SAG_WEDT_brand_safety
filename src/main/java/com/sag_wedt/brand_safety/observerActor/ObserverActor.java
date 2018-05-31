@@ -4,32 +4,23 @@ import akka.actor.AbstractActor;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.Member;
-import akka.cluster.MemberStatus;
-import akka.dispatch.OnSuccess;
-import akka.util.Timeout;
-import com.sag_wedt.brand_safety.messages.CommonMessages.TestMessage;
-import com.sag_wedt.brand_safety.messages.RespondMessages.SuccessResponse;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
-
-import static akka.pattern.Patterns.ask;
-import static com.sag_wedt.brand_safety.messages.CommonMessages.TEXT_CLASSIFIER_ACTOR_REGISTRATION;
 
 
 public class ObserverActor extends AbstractActor {
 
-    Cluster cluster = Cluster.get(getContext().system());
-    ObserverServlet observerServlet = new ObserverServlet();
-
+    Cluster cluster = Cluster.get(getContext().getSystem());
     @Override
     public void preStart() {
-        final FiniteDuration interval = Duration.create(10, TimeUnit.SECONDS);
+        final FiniteDuration interval = Duration.create(1, TimeUnit.SECONDS);
         final ExecutionContext ec = cluster.system().dispatcher();
         final AtomicInteger counter = new AtomicInteger();
         cluster.system().scheduler().schedule(interval, interval, () -> refreshStats(), ec);
@@ -49,11 +40,22 @@ public class ObserverActor extends AbstractActor {
     }
 
     private void refreshStats() {
-        Stream<Member> memebers = StreamSupport.stream(cluster.state().getMembers().spliterator(), false);
-        long textClassifierActorsNum = memebers.filter(m -> m.hasRole("textClassifier")).count();
-        Stream<Member> memebers2 = StreamSupport.stream(cluster.state().getMembers().spliterator(), false);
-        long frontendActorsNum = memebers2.filter(m -> m.hasRole("frontend")).count();
+        Spliterator<Member> members = cluster.state().getMembers().spliterator();
+        AtomicLong textClassifierActorsNum = new AtomicLong(0);
+        AtomicLong frontendActorsNum = new AtomicLong(0);
+        members.forEachRemaining(m -> {
+            if(m.hasRole("textClassifier")) {
+                textClassifierActorsNum.getAndIncrement();
+            }
+            if(m.hasRole("frontend")) {
+                frontendActorsNum.getAndIncrement();
+            }
+            System.out.pr;
+        });
 
-        observerServlet.addStatistics(0, frontendActorsNum, textClassifierActorsNum);
+        Long all = StreamSupport.stream(cluster.state().getMembers().spliterator(), false).count();
+
+        System.out.println("Actors: " + all);
+        System.out.println("TextClassifierActors: " + textClassifierActorsNum + " FrontendActors " + frontendActorsNum);
     }
 }

@@ -17,6 +17,6 @@ public class TextClassifierMain {
 
         ActorSystem system = ActorSystem.create("ClusterSystem", config);
 
-        system.actorOf(Props.create(TextClassifierActor.class), "textClassifier");
+        system.actorOf(Props.create(TextClassifierParentActor.class), "textClassifier");
     }
 }
