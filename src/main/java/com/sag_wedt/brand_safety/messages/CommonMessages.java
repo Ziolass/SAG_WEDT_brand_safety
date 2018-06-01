@@ -4,9 +4,11 @@ import java.io.Serializable;
 
 public interface CommonMessages {
 
-    String TEXT_CLASSIFIER_ACTOR_REGISTRATION = "TextClassifierActorRegistration";
+    String OPINION_ANALYSIS_ACTOR_REGISTRATION = "OpinionAnalysisActorRegistration";
 
-    class TestMessage implements Serializable {
+    abstract class MyMessage implements Serializable {}
+
+    class TestMessage extends MyMessage {
         private final String text;
 
         public TestMessage(String text) {

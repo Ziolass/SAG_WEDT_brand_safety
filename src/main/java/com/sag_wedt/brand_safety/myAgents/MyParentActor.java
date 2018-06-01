@@ -1,21 +1,26 @@
-package com.sag_wedt.brand_safety.googleCloudActors;
+package com.sag_wedt.brand_safety.myAgents;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
-import akka.actor.Props;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.Member;
 import akka.cluster.MemberStatus;
-import com.sag_wedt.brand_safety.messages.CommonMessages.TestMessage;
-import com.sag_wedt.brand_safety.messages.RespondMessages.SuccessResponse;
-
-import static com.sag_wedt.brand_safety.messages.CommonMessages.TEXT_CLASSIFIER_ACTOR_REGISTRATION;
+import akka.japi.pf.ReceiveBuilder;
 
 
-public class TextClassifierParentActor extends AbstractActor {
+public class MyParentActor extends AbstractActor {
 
     Cluster cluster = Cluster.get(getContext().system());
+    
+    final Class typeMessageClass;
+
+    MyActorAnswer answer;
+
+    protected MyParentActor(Class typeMessageClass, MyActorAnswer answer) {
+        this.typeMessageClass = typeMessageClass;
+        this.answer = answer;
+    }
 
     @Override
     public void preStart() {
@@ -29,11 +34,16 @@ public class TextClassifierParentActor extends AbstractActor {
 
     @Override
     public Receive createReceive() {
-        return receiveBuilder()
-                .match(TestMessage.class, msg -> {
-                    ActorRef newAgent = getContext().system().actorOf(Props.create(TextClassifierActor.class));
+        return commonBuilder()
+                .match(typeMessageClass, msg -> {
+                    ActorRef newAgent = getContext().system().actorOf(MyActor.props(this.typeMessageClass, this.answer));
                     newAgent.tell(msg, sender());
                 })
+                .build();
+    }
+
+    public final ReceiveBuilder commonBuilder() {
+        return receiveBuilder()
                 .match(ClusterEvent.CurrentClusterState.class, state -> {
                     for (Member member : state.getMembers()) {
                         if (member.status().equals(MemberStatus.up())) {
@@ -43,13 +53,12 @@ public class TextClassifierParentActor extends AbstractActor {
                 })
                 .match(ClusterEvent.MemberUp.class, mUp -> {
                     register(mUp.member());
-                })
-                .build();
+                });
     }
 
-    void register(Member member) {
-        if (member.hasRole("frontend"))
-            getContext().actorSelection(member.address() + "/user/frontend").tell(
-                    TEXT_CLASSIFIER_ACTOR_REGISTRATION, self());
+    public void register(Member member) {}
+
+    public void setAnswer(MyActorAnswer answer) {
+        this.answer = answer;
     }
 }

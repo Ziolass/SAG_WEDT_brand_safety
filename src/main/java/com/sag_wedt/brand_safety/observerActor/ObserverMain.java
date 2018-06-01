@@ -2,7 +2,6 @@ package com.sag_wedt.brand_safety.observerActor;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.sag_wedt.brand_safety.googleCloudActors.TextClassifierActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

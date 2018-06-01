@@ -1,11 +1,12 @@
-package com.sag_wedt.brand_safety.googleCloudActors;
+package com.sag_wedt.brand_safety.googleCloudActors.opinionAnalysis;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.sag_wedt.brand_safety.googleCloudActors.GoogleCloudActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-public class TextClassifierMain {
+public class OpinionAnalysisClassifierMain {
     public static void main(String[] args) {
         final String port = args.length > 0 ? args[0] : "0";
         final Config config =
@@ -17,6 +18,6 @@ public class TextClassifierMain {
 
         ActorSystem system = ActorSystem.create("ClusterSystem", config);
 
-        system.actorOf(Props.create(TextClassifierParentActor.class), "textClassifier");
+        system.actorOf(Props.create(OpinionAnalysisClassifierActor.class), "textClassifier");
     }
 }

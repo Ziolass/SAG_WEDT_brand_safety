@@ -1,10 +1,8 @@
 package com.sag_wedt.brand_safety.messages;
 
-import java.io.Serializable;
-
 public interface Messages {
 
-    class ClassifyWebPage implements Serializable {
+    class ClassifyWebPage extends CommonMessages.MyMessage {
         private final String text;
 
         public ClassifyWebPage(String text) {
