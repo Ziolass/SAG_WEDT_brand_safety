@@ -31,8 +31,14 @@ public class ClassifierFrontendActor extends AbstractActor {
                 .match(TestMessage.class, msg -> {
                     opinionAnalysisClassifierActorCounter++;
                     opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
-                            .forward(msg, getContext());
+                            .tell(msg, self());
                     log.info("Success Message. Message: " + msg.getText() + " from: " + sender());
+                })
+                .match(Response.class, msg -> {
+                    opinionAnalysisClassifierActorCounter++;
+                    opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
+                            .tell(msg, self());
+                    log.info("Success Message. Message: " + msg + " from: " + sender());
                 })
                 .matchEquals(OPINION_ANALYSIS_ACTOR_REGISTRATION, msg -> {
                     getContext().watch(sender());

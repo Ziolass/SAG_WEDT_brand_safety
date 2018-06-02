@@ -29,7 +29,10 @@ public class MyActor extends AbstractActor {
         return receiveBuilder()
                 .match(typeMessageClass, msg -> {
                     if(msg instanceof CommonMessages.MyMessage) {
-                        answer.apply((CommonMessages.MyMessage)msg, () -> getContext().system().stop(self()));
+                        answer.apply((CommonMessages.MyMessage)msg, (Object response) -> {
+                            sender().tell(response,self());
+                            getContext().system().stop(self());
+                        });
                     } else {
                         log.warning("Actor get unexpected msg: " + msg);
                     }

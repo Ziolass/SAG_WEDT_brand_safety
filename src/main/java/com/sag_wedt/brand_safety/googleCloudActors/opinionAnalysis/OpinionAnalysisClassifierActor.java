@@ -27,10 +27,11 @@ public class OpinionAnalysisClassifierActor extends GoogleCloudActor implements 
     void answerMessage(CommonMessages.MyMessage msg, Callable callback) {
         //TODO obsługa wysłania zapytania i na koniec wywołanie callback.then
         System.out.println(msg.toString());
-        callback.then();
+        callback.then(new RespondMessages.SuccessResponse());
     }
 
     public int sendRestRequest() {
+        //ApacheHttpClient.sendGet(url) lub ApacheHttpClient.sendPost(url, listaparametrów)
         return 0;
     }
 }

@@ -12,7 +12,6 @@ import com.sag_wedt.brand_safety.messages.RespondMessages;
 
 import java.util.ArrayList;
 
-import static com.sag_wedt.brand_safety.messages.CommonMessages.TEXT_CLASSIFIER_ACTOR_REGISTRATION;
 
 public class MyClassifierActor extends AbstractActor {
 
