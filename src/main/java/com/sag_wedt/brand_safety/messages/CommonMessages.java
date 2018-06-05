@@ -6,11 +6,12 @@ import java.util.UUID;
 public interface CommonMessages {
 
     String OPINION_ANALYSIS_ACTOR_REGISTRATION = "OpinionAnalysisActorRegistration";
+    String MY_CLASSIFIER_ACTOR = "MyClassifierActor";
 
     abstract class MyMessage implements Serializable {
-        public UUID id;
+        public final UUID id;
 
-        public MyMessage() {
+        MyMessage() {
             this.id = UUID.randomUUID();
         }
     }

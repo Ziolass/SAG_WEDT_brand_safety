@@ -18,6 +18,7 @@ import java.util.stream.StreamSupport;
 public class ObserverActor extends AbstractActor {
 
     Cluster cluster = Cluster.get(getContext().getSystem());
+
     @Override
     public void preStart() {
         final FiniteDuration interval = Duration.create(1, TimeUnit.SECONDS);

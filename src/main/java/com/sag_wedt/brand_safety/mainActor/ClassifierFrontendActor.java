@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.sag_wedt.brand_safety.messages.CommonMessages.MY_CLASSIFIER_ACTOR;
 import static com.sag_wedt.brand_safety.messages.CommonMessages.OPINION_ANALYSIS_ACTOR_REGISTRATION;
 
 
@@ -28,7 +29,12 @@ public class ClassifierFrontendActor extends AbstractActor {
 
     List<ActorRef> opinionAnalysisClassifierActorList = new ArrayList<>();
     int opinionAnalysisClassifierActorCounter = 0;
+
+    List<ActorRef> myClassifierActorList = new ArrayList<>();
+    int myClassifierActorCounter = 0;
+
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+
     List<ResponseWatcher> responses = new ArrayList<>();
 
     ClassifierFrontendActor() {
@@ -43,9 +49,7 @@ public class ClassifierFrontendActor extends AbstractActor {
                 })
                 .match(Messages.ClassifyWebPage.class, msg -> {
                     responses.add(new ResponseWatcher(sender(), msg));
-                    opinionAnalysisClassifierActorCounter++;
-                    opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
-                            .tell(msg, self());
+                    sendMessageToClassifier(msg);
                 })
                 .match(Response.class, msg -> {
                     responses.removeIf(r -> r.getMessageId().equals( msg.id));
@@ -55,6 +59,11 @@ public class ClassifierFrontendActor extends AbstractActor {
                     getContext().watch(sender());
                     opinionAnalysisClassifierActorList.add(sender());
                     log.info("Text classifier actor registration. Actor: " + sender());
+                })
+                .matchEquals(MY_CLASSIFIER_ACTOR, msg -> {
+                    getContext().watch(sender());
+                    myClassifierActorList.add(sender());
+                    log.info("My classifier actor registration. Actor: " + sender());
                 })
                 .match(Terminated.class, terminated -> {
                     opinionAnalysisClassifierActorList.remove(terminated.getActor());
