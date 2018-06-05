@@ -1,12 +1,27 @@
 package com.sag_wedt.brand_safety.messages;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public interface RespondMessages {
 
-    class Response implements Serializable {}
+    class Response implements Serializable {
+        public UUID id;
 
-    class FailureResponse extends Response {}
+        public Response(UUID id) {
+            this.id = id;
+        }
+    }
 
-    class SuccessResponse extends Response {}
+    class FailureResponse extends Response {
+        public FailureResponse(UUID id) {
+            super(id);
+        }
+    }
+
+    class SuccessResponse extends Response {
+        public SuccessResponse(UUID id) {
+            super(id);
+        }
+    }
 }

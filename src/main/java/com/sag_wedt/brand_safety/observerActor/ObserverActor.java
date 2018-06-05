@@ -23,7 +23,7 @@ public class ObserverActor extends AbstractActor {
         final FiniteDuration interval = Duration.create(1, TimeUnit.SECONDS);
         final ExecutionContext ec = cluster.system().dispatcher();
         final AtomicInteger counter = new AtomicInteger();
-        cluster.system().scheduler().schedule(interval, interval, () -> refreshStats(), ec);
+        cluster.system().scheduler().schedule(interval, interval, this::refreshStats, ec);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ObserverActor extends AbstractActor {
 
         Long all = StreamSupport.stream(cluster.state().getMembers().spliterator(), false).count();
 
-        System.out.println("Actors: " + all);
-        System.out.println("TextClassifierActors: " + textClassifierActorsNum + " FrontendActors " + frontendActorsNum);
+        System.out.println("Nodes: " + Math.max(all-1,0));
+        System.out.println("TextClassifierActorsNodes: " + textClassifierActorsNum + " FrontendActorsNodes " + frontendActorsNum);
     }
 }

@@ -7,37 +7,47 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.sag_wedt.brand_safety.messages.CommonMessages.*;
 import com.sag_wedt.brand_safety.messages.RespondMessages.*;
+import com.sag_wedt.brand_safety.utils.ResponseWatcher;
+import scala.concurrent.ExecutionContext;
+import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.sag_wedt.brand_safety.messages.CommonMessages.OPINION_ANALYSIS_ACTOR_REGISTRATION;
 
 
 public class ClassifierFrontendActor extends AbstractActor {
 
+    private final int REPLACE_LIMIT = 2;
+    private final int RESPOND_TIME = 30;
+
     List<ActorRef> opinionAnalysisClassifierActorList = new ArrayList<>();
     int opinionAnalysisClassifierActorCounter = 0;
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    List<ResponseWatcher> responses = new ArrayList<>();
+
+    ClassifierFrontendActor() {
+        scheduleCheckInformation();
+    }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(TestMessage.class, msg -> opinionAnalysisClassifierActorList.isEmpty(), msg -> {
-                    sender().tell(new FailureResponse(),
-                            sender());
                     log.info("Failure Message. Message: " + msg.getText() + " from: " + sender());
                 })
                 .match(TestMessage.class, msg -> {
+                    responses.add(new ResponseWatcher(sender(), msg));
                     opinionAnalysisClassifierActorCounter++;
                     opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
                             .tell(msg, self());
-                    log.info("Success Message. Message: " + msg.getText() + " from: " + sender());
                 })
                 .match(Response.class, msg -> {
-                    opinionAnalysisClassifierActorCounter++;
-                    opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
-                            .tell(msg, self());
+                    responses.removeIf(r -> r.getMessageId().equals( msg.id));
                     log.info("Success Message. Message: " + msg + " from: " + sender());
                 })
                 .matchEquals(OPINION_ANALYSIS_ACTOR_REGISTRATION, msg -> {
@@ -50,5 +60,33 @@ public class ClassifierFrontendActor extends AbstractActor {
                     log.info("Text classifier actor terminated. Actor: " + sender());
                 })
                 .build();
+    }
+
+    private void scheduleCheckInformation(){
+        final FiniteDuration interval = Duration.create(30, TimeUnit.SECONDS);
+        final ExecutionContext ec = getContext().system().dispatcher();
+        getContext().system().scheduler().schedule(interval, interval, () -> {
+            responses.forEach(r -> {
+                if(r.getDate().until(LocalDateTime.now(), ChronoUnit.SECONDS) > RESPOND_TIME) {
+                    r.incrementReplace();
+                }
+                if(r.getReplace() < REPLACE_LIMIT){
+                    sendMessageToClassifier(r.getMessage());
+                } else {
+                    sendFailureMessage(r.getMessage(), r.getSender());
+                }
+            });
+            responses.removeIf(r -> r.getReplace() >= REPLACE_LIMIT);
+        }, ec);
+    }
+
+    private void sendMessageToClassifier(MyMessage msg){
+        opinionAnalysisClassifierActorCounter++;
+        opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
+                .tell(msg, self());
+    }
+
+    private void sendFailureMessage(MyMessage msg, ActorRef recipient){
+        recipient.tell(new FailureResponse(msg.id), self());
     }
 }
