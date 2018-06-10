@@ -4,15 +4,53 @@ package com.sag_wedt.brand_safety.googleCloudActors.sentimentAnalysis;
 import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.Document.Type;
 import com.google.cloud.language.v1.LanguageServiceClient;
-import com.google.cloud.language.v1.Sentiment;
 
 import com.google.cloud.language.v1.ClassifyTextRequest;
 import com.google.cloud.language.v1.ClassifyTextResponse;
 import com.google.cloud.language.v1.ClassificationCategory;
+import com.google.common.collect.ImmutableList;
+import com.sag_wedt.brand_safety.utils.brandSafetyResponse;
+
+import java.util.List;
 
 
 public class SentimentAnalysisClassifierMain {
-    public static void main(String... args) throws Exception {
+
+    public static final ImmutableList<String> CATEGORIES_BLACKLIST =
+            ImmutableList.of(
+                    "/Adult",
+                    "/Arts & Entertainment/Events & Listings//Bars, Clubs & Nightlife",
+                    "/Arts & Entertainment/Humor//Political Humor",
+                    "/Arts & Entertainment/Music & Audio//Religious Music",
+                    "/Arts & Entertainment/Offbeat/Occult & Paranormal",
+                    "/Food & Drink/Beverages/Alcoholic Beverages",
+                    "/Games/Card Games//Poker & Casino Games",
+                    "/Games/Gambling",
+                    "/Games/Gambling/Lottery",
+                    "/Health/Health Conditions/AIDS & HIV",
+                    "/Health/Health Conditions/Cancer",
+                    "/Health/Health Conditions/Infectious Diseases",
+                    "/Health//Mental Health",
+                    "/Health//Mental Health/Anxiety & Stress",
+                    "/Health//Mental Health/Depression",
+                    "/Health/Pharmacy//Drugs & Medications",
+                    "/Health/Substance Abuse",
+                    "/Law & Government/Government/Visa & Immigration",
+                    "/Law & Government/Legal/Bankruptcy",
+                    "/Law & Government/Public Safety/Crime & Justice",
+                    "/News/Gossip & Tabloid News//Scandals & Investigations",
+                    "/Online Communities/Dating & Personals//Matrimonial Services",
+                    "/People & Society/Family & Relationships//Troubled Relationships",
+                    "/People & Society//Religion & Belief",
+                    "/People & Society/Social Issues & Advocacy/Discrimination & Identity Relations",
+                    "/People & Society/Social Issues & Advocacy/Human Rights & Liberties",
+                    "/People & Society/Social Issues & Advocacy/Poverty & Hunger",
+                    "/People & Society/Social Issues & Advocacy/Work & Labor Issues",
+                    "/Science/Ecology & Environment//Climate Change & Global Warming",
+                    "/Shopping//Tobacco Products",
+                    "/Sensitive Subjects");
+
+    public static void main(String... args) {
         // Instantiates a client
         try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
@@ -26,22 +64,37 @@ public class SentimentAnalysisClassifierMain {
             Document doc = Document.newBuilder()
                     .setContent(text).setType(Type.PLAIN_TEXT).build();
 
-            // Detects the sentiment of the text
-            Sentiment sentiment = language.analyzeSentiment(doc).getDocumentSentiment();
-
-            System.out.printf("Text: %s%n\n", text);
-            System.out.printf("Sentiment: %s, %s%n", sentiment.getScore(), sentiment.getMagnitude());
-
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder()
                     .setDocument(doc)
                     .build();
             // detect categories in the given text
             ClassifyTextResponse response = language.classifyText(request);
 
-            for (ClassificationCategory category : response.getCategoriesList()) {
+            List<ClassificationCategory> categories = response.getCategoriesList();
+
+            for (ClassificationCategory category : categories) {
                 System.out.printf("Category name : %s, Confidence : %.3f\n",
                         category.getName(), category.getConfidence());
             }
+
+            if (categories.size() < 1)
+            {
+                callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.UNDEFINED));
+            }
+
+            for (ClassificationCategory category : categories) {
+                if (category.getConfidence() > 0.2 && CATEGORIES_BLACKLIST.contains(category.getName()))
+                {
+                    callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.NEGATIVE));
+                }
+            }
+
+            callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.POSITIVE));
+
+        }
+        catch (Exception ex)
+        {
+            callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.UNDEFINED));
         }
     }
 }
