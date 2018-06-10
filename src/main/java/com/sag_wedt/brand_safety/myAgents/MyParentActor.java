@@ -7,6 +7,7 @@ import akka.cluster.ClusterEvent;
 import akka.cluster.Member;
 import akka.cluster.MemberStatus;
 import akka.japi.pf.ReceiveBuilder;
+import com.sag_wedt.brand_safety.messages.CommonMessages;
 
 
 public class MyParentActor extends AbstractActor {
@@ -17,9 +18,9 @@ public class MyParentActor extends AbstractActor {
 
     MyActorAnswer answer;
 
-    protected MyParentActor(Class typeMessageClass, MyActorAnswer answer) {
+    protected MyParentActor(Class typeMessageClass) {
         this.typeMessageClass = typeMessageClass;
-        this.answer = answer;
+        this.setAnswer(this::answerMessage);
     }
 
     @Override
@@ -58,7 +59,9 @@ public class MyParentActor extends AbstractActor {
 
     public void register(Member member) {}
 
-    public void setAnswer(MyActorAnswer answer) {
+    void setAnswer(MyActorAnswer answer) {
         this.answer = answer;
     }
+
+    public void answerMessage(CommonMessages.MyMessage msg, Callable callback) {}
 }

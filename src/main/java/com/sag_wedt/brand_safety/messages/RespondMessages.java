@@ -8,14 +8,16 @@ public interface RespondMessages {
     class Response implements Serializable {
         public UUID id;
 
-        public Response(UUID id) {
+        Response(UUID id) {
             this.id = id;
         }
     }
 
     class FailureResponse extends Response {
-        public FailureResponse(UUID id) {
+        public String msg;
+        public FailureResponse(UUID id, String msg) {
             super(id);
+            this.msg = msg;
         }
     }
 
@@ -29,6 +31,13 @@ public interface RespondMessages {
         public SuccessResponse(UUID id, T opinion) {
             super(id);
             this.opinion = opinion;
+        }
+
+        @Override
+        public String toString() {
+            return "SuccessResponse{" +
+                    "opinion=" + opinion +
+                    '}';
         }
     }
 }

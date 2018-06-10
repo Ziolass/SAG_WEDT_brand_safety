@@ -42,11 +42,15 @@ public class ObserverActor extends AbstractActor {
 
     private void refreshStats() {
         Spliterator<Member> members = cluster.state().getMembers().spliterator();
-        AtomicLong textClassifierActorsNum = new AtomicLong(0);
+        AtomicLong textOpinionClassifierActorsNum = new AtomicLong(0);
+        AtomicLong textSentimentClassifierActorsNum = new AtomicLong(0);
         AtomicLong frontendActorsNum = new AtomicLong(0);
         members.forEachRemaining(m -> {
-            if(m.hasRole("textClassifier")) {
-                textClassifierActorsNum.getAndIncrement();
+            if(m.hasRole("opinionAnalysis")) {
+                textOpinionClassifierActorsNum.getAndIncrement();
+            }
+            if(m.hasRole("sentimentAnalysis")) {
+                textSentimentClassifierActorsNum.getAndIncrement();
             }
             if(m.hasRole("frontend")) {
                 frontendActorsNum.getAndIncrement();
@@ -56,6 +60,8 @@ public class ObserverActor extends AbstractActor {
         Long all = StreamSupport.stream(cluster.state().getMembers().spliterator(), false).count();
 
         System.out.println("Nodes: " + Math.max(all-1,0));
-        System.out.println("TextClassifierActorsNodes: " + textClassifierActorsNum + " FrontendActorsNodes " + frontendActorsNum);
+        System.out.println("FrontendActorsNodes " + frontendActorsNum);
+        System.out.println("TextOpinionClassifierActorsNodes: " + textOpinionClassifierActorsNum);
+        System.out.println("TextSentimentClassifierActorsNodes: " + textSentimentClassifierActorsNum);
     }
 }

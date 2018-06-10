@@ -12,8 +12,7 @@ import static com.sag_wedt.brand_safety.messages.CommonMessages.MY_CLASSIFIER_AC
 public class MyClassifierActor extends MyParentActor {
 
     private MyClassifierActor() {
-        super(CommonMessages.TestMessage.class, (msg, callback) -> {});
-        this.setAnswer(this::answerMessage);
+        super(CommonMessages.TestMessage.class);
     }
 
     @Override
@@ -23,7 +22,8 @@ public class MyClassifierActor extends MyParentActor {
                     MY_CLASSIFIER_ACTOR, self());
     }
 
-    void answerMessage(CommonMessages.MyMessage msg, Callable callback) {
+    @Override
+    public void answerMessage(CommonMessages.MyMessage msg, Callable callback) {
         //TODO obsługa wysłania zapytania i na koniec wywołanie callback.then
         System.out.println(msg.toString());
         callback.then(new RespondMessages.SuccessResponse(msg.id));

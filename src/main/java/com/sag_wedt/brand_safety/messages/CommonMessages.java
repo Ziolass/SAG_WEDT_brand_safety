@@ -6,6 +6,7 @@ import java.util.UUID;
 public interface CommonMessages {
 
     String OPINION_ANALYSIS_ACTOR_REGISTRATION = "OpinionAnalysisActorRegistration";
+    String SENTIMENT_ANALYSIS_ACTOR_REGISTRATION = "SentimentAnalysisActorRegistration";
     String MY_CLASSIFIER_ACTOR = "MyClassifierActor";
 
     abstract class MyMessage implements Serializable {

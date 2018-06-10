@@ -1,26 +1,23 @@
 package com.sag_wedt.brand_safety.googleCloudActors.opinionAnalysis;
 
 import akka.cluster.Member;
-import com.sag_wedt.brand_safety.googleCloudActors.GoogleCloudActor;
-import com.sag_wedt.brand_safety.googleCloudActors.RestActor;
-import com.sag_wedt.brand_safety.messages.*;
-import com.sag_wedt.brand_safety.myAgents.Callable;
-
 import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.Document.Type;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.Sentiment;
-import com.sag_wedt.brand_safety.utils.brandSafetyResponse;
+import com.sag_wedt.brand_safety.googleCloudActors.GoogleCloudActor;
+import com.sag_wedt.brand_safety.messages.CommonMessages;
+import com.sag_wedt.brand_safety.messages.Messages;
+import com.sag_wedt.brand_safety.messages.RespondMessages;
+import com.sag_wedt.brand_safety.myAgents.Callable;
 
 import static com.sag_wedt.brand_safety.messages.CommonMessages.OPINION_ANALYSIS_ACTOR_REGISTRATION;
+import static com.sag_wedt.brand_safety.utils.BrandSafetyResponse.*;
 
-public class OpinionAnalysisClassifierActor extends GoogleCloudActor implements RestActor {
-
-    private final static String ANALYSIS_URL = "jakisAdres";
+public class OpinionAnalysisClassifierActor extends GoogleCloudActor {
 
     private OpinionAnalysisClassifierActor() {
-        super(Messages.ClassifyWebPage.class, (msg, callback) -> {}, ANALYSIS_URL);
-        this.setAnswer(this::answerMessage);
+        super(Messages.ClassifyOpinionWebPage.class);
     }
 
     @Override
@@ -30,11 +27,12 @@ public class OpinionAnalysisClassifierActor extends GoogleCloudActor implements 
                     OPINION_ANALYSIS_ACTOR_REGISTRATION, self());
     }
 
-    void answerMessage(CommonMessages.MyMessage msg, Callable callback) {
+    @Override
+    public void answerMessage(CommonMessages.MyMessage msg, Callable callback) {
         try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
             // The text to analyze
-            String text = ((Messages.ClassifyWebPage)msg).getPageContent();
+            String text = ((Messages.ClassifyOpinionWebPage)msg).getPageContent();
 
             Document doc = Document.newBuilder()
                     .setContent(text).setType(Type.PLAIN_TEXT).build();
@@ -49,31 +47,27 @@ public class OpinionAnalysisClassifierActor extends GoogleCloudActor implements 
             {
                 if (sentiment.getScore() > 0.0)
                 {
-                    callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.POSITIVE));
+                    callback.then(new RespondMessages.SuccessResponse<>(msg.id, POSITIVE));
                 }
                 else if (sentiment.getScore() > 0.0)
                 {
-                    callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.NEGATIVE));
+                    callback.then(new RespondMessages.SuccessResponse<>(msg.id, NEGATIVE));
                 }
                 else
                 {
-                    callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.UNDEFINED));
+                    callback.then(new RespondMessages.SuccessResponse<>(msg.id, UNDEFINED));
                 }
             }
             else
             {
-                callback.then(new RespondMessages.SuccessResponse(msg.id, brandSafetyResponse.UNDEFINED));
+                callback.then(new RespondMessages.SuccessResponse<>(msg.id, UNDEFINED));
             }
 
         }
         catch (Exception ex)
         {
-            callback.then(new RespondMessages.FailureResponse(msg.id));
+            System.out.println(ex.toString());
+            callback.then(new RespondMessages.FailureResponse(msg.id, ex.getLocalizedMessage()));
         }
-    }
-
-    public int sendRestRequest() {
-        //ApacheHttpClient.sendGet(url) lub ApacheHttpClient.sendPost(url, listaparametrów)
-        return 0;
     }
 }

@@ -13,4 +13,28 @@ public interface Messages {
             return text;
         }
     }
+
+    class ClassifyOpinionWebPage extends CommonMessages.MyMessage {
+        private final String text;
+
+        public ClassifyOpinionWebPage(String text) {
+            this.text = text;
+        }
+
+        public String getPageContent() {
+            return text;
+        }
+    }
+
+    class ClassifySentimentWebPage extends CommonMessages.MyMessage {
+        private final String text;
+
+        public ClassifySentimentWebPage(String text) {
+            this.text = text;
+        }
+
+        public String getPageContent() {
+            return text;
+        }
+    }
 }

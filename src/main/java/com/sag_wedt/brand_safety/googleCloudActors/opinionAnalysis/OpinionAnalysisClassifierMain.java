@@ -2,7 +2,6 @@ package com.sag_wedt.brand_safety.googleCloudActors.opinionAnalysis;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.sag_wedt.brand_safety.googleCloudActors.GoogleCloudActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -13,11 +12,11 @@ public class OpinionAnalysisClassifierMain {
                 ConfigFactory.parseString(
                         "akka.remote.netty.tcp.port=" + port + "\n" +
                                 "akka.remote.artery.canonical.port=" + port).
-                        withFallback(ConfigFactory.parseString("akka.cluster.roles = [textClassifier]")).
+                        withFallback(ConfigFactory.parseString("akka.cluster.roles = [opinionAnalysis]")).
                         withFallback(ConfigFactory.load());
 
         ActorSystem system = ActorSystem.create("ClusterSystem", config);
 
-        system.actorOf(Props.create(OpinionAnalysisClassifierActor.class), "textClassifier");
+        system.actorOf(Props.create(OpinionAnalysisClassifierActor.class), "opinionAnalysis");
     }
 }

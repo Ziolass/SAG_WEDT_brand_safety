@@ -5,8 +5,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.dispatch.OnSuccess;
 import akka.util.Timeout;
-import com.sag_wedt.brand_safety.messages.CommonMessages.*;
-import com.sag_wedt.brand_safety.messages.Messages.*;
+import com.sag_wedt.brand_safety.messages.Messages.ClassifyWebPage;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import scala.concurrent.ExecutionContext;
@@ -38,6 +37,7 @@ public class ClassifierFrontendMain {
         final ExecutionContext ec = system.dispatcher();
         final AtomicInteger counter = new AtomicInteger();
         system.scheduler().schedule(interval, interval, () -> {
+            System.out.println("SEND");
             ask(frontend,
                     new ClassifyWebPage("Text: The 2009 Richmond High School gang rape occurred on Saturday, October 24, 2009, in Richmond, a city on the northeast side of the San Francisco Bay in California, U.S., when a female student of Richmond High School was gang raped repeatedly by a group of young males in a courtyard on the school campus while a homecoming dance was being held in the gymnasium. Although seven people faced charges related to the rape, one was released after a preliminary hearing. Five of the remaining six faced life imprisonment, should the charges be upheld, and one faced a maximum of eight years in jail. All initially pleaded not guilty.\n" +
                             "\n" +
