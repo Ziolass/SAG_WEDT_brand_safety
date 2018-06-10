@@ -12,11 +12,11 @@ import com.sag_wedt.brand_safety.messages.CommonMessages;
 
 public class MyParentActor extends AbstractActor {
 
-    Cluster cluster = Cluster.get(getContext().system());
-    
-    final Class typeMessageClass;
+    private Cluster cluster = Cluster.get(getContext().system());
 
-    MyActorAnswer answer;
+    private final Class typeMessageClass;
+
+    private MyActorAnswer answer;
 
     protected MyParentActor(Class typeMessageClass) {
         this.typeMessageClass = typeMessageClass;
@@ -43,7 +43,7 @@ public class MyParentActor extends AbstractActor {
                 .build();
     }
 
-    public final ReceiveBuilder commonBuilder() {
+    private ReceiveBuilder commonBuilder() {
         return receiveBuilder()
                 .match(ClusterEvent.CurrentClusterState.class, state -> {
                     for (Member member : state.getMembers()) {
@@ -52,9 +52,7 @@ public class MyParentActor extends AbstractActor {
                         }
                     }
                 })
-                .match(ClusterEvent.MemberUp.class, mUp -> {
-                    register(mUp.member());
-                });
+                .match(ClusterEvent.MemberUp.class, mUp -> register(mUp.member()));
     }
 
     public void register(Member member) {}

@@ -14,15 +14,22 @@ public interface RespondMessages {
     }
 
     class FailureResponse extends Response {
-        public String msg;
+        private String msg;
         public FailureResponse(UUID id, String msg) {
             super(id);
             this.msg = msg;
         }
+
+        @Override
+        public String toString() {
+            return "FailureResponse{" +
+                    "msg='" + msg + '\'' +
+                    '}';
+        }
     }
 
     class SuccessResponse<T> extends Response {
-        public T opinion;
+        private T opinion;
 
         public SuccessResponse(UUID id) {
             super(id);

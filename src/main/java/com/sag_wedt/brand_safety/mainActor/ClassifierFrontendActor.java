@@ -30,18 +30,15 @@ public class ClassifierFrontendActor extends AbstractActor {
     private final int REPLACE_LIMIT = 2;
     private final int RESPOND_TIME = 30;
 
-    List<ActorRef> opinionAnalysisClassifierActorList = new ArrayList<>();
-    int opinionAnalysisClassifierActorCounter = 0;
+    private MyActorList opinionAnalysisClassifierActorList = new MyActorList();
 
-    List<ActorRef> sentimentAnalysisClassifierActorList = new ArrayList<>();
-    int sentimentAnalysisClassifierActorCounter= 0;
+    private MyActorList sentimentAnalysisClassifierActorList = new MyActorList();
 
-    List<ActorRef> myClassifierActorList = new ArrayList<>();
-    int myClassifierActorCounter = 0;
+    private MyActorList myClassifierActorList = new MyActorList();
 
-    LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
-    List<ResponseWatcher> responses = new ArrayList<>();
+    private List<ResponseWatcher> responses = new ArrayList<>();
 
     ClassifierFrontendActor() {
         scheduleCheckInformation();
@@ -79,6 +76,7 @@ public class ClassifierFrontendActor extends AbstractActor {
                 })
                 .match(Terminated.class, terminated -> {
                     opinionAnalysisClassifierActorList.remove(terminated.getActor());
+                    sentimentAnalysisClassifierActorList.remove(terminated.getActor());
                     log.info("Text classifier actor terminated. Actor: " + sender());
                 })
                 .build();
@@ -103,18 +101,14 @@ public class ClassifierFrontendActor extends AbstractActor {
     }
 
     private void sendMessageToClassifier(MyMessage msg){
-        if (msg instanceof ClassifyOpinionWebPage && !opinionAnalysisClassifierActorList.isEmpty()) {
-            opinionAnalysisClassifierActorCounter++;
-            opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
-                    .tell(msg, self());
-        } else if (msg instanceof ClassifySentimentWebPage && !sentimentAnalysisClassifierActorList.isEmpty()) {
-            sentimentAnalysisClassifierActorCounter++;
-            sentimentAnalysisClassifierActorList.get(sentimentAnalysisClassifierActorCounter % sentimentAnalysisClassifierActorList.size())
-                    .tell(msg, self());
+        if (msg instanceof ClassifyOpinionWebPage && opinionAnalysisClassifierActorList.nonEmpty()) {
+            opinionAnalysisClassifierActorList.getNext().tell(msg, self());
+        } else if (msg instanceof ClassifySentimentWebPage && sentimentAnalysisClassifierActorList.nonEmpty()) {
+            sentimentAnalysisClassifierActorList.getNext().tell(msg, self());
         } else if (msg instanceof ClassifyWebPage) {
             sendMessageToClassifier(new ClassifySentimentWebPage(((ClassifyWebPage) msg).getPageContent()));
             sendMessageToClassifier(new ClassifyOpinionWebPage(((ClassifyWebPage) msg).getPageContent()));
-        } else if(!opinionAnalysisClassifierActorList.isEmpty() || !sentimentAnalysisClassifierActorList.isEmpty()) {
+        } else if(opinionAnalysisClassifierActorList.nonEmpty() && sentimentAnalysisClassifierActorList.nonEmpty()) {
             log.warning("Bad message format" + MyMessage.class);
         } else {
             log.warning("No classifier actors in system!");

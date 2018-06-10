@@ -1,9 +1,9 @@
 package com.sag_wedt.brand_safety.googleCloudActors.sentimentAnalysis;
 
 // Imports the Google Cloud client library
+
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.sag_wedt.brand_safety.googleCloudActors.opinionAnalysis.OpinionAnalysisClassifierActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -21,6 +21,6 @@ public class SentimentAnalysisClassifierMain {
 
         ActorSystem system = ActorSystem.create("ClusterSystem", config);
 
-        system.actorOf(Props.create(OpinionAnalysisClassifierActor.class), "sentimentAnalysis");
+        system.actorOf(Props.create(SentimentAnalysisClassifierActor.class), "sentimentAnalysis");
     }
 }
