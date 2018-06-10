@@ -9,9 +9,10 @@ repositories {
 }
 
 dependencies {
-  compile 'com.typesafe.akka:akka-actor_2.12:2.5.3'
-  testCompile 'com.typesafe.akka:akka-testkit_2.12:2.5.3'
-  testCompile 'junit:junit:4.12'
+    compile 'com.typesafe.akka:akka-actor_2.12:2.5.3'
+    compile 'com.google.cloud:google-cloud-language:1.31.0'
+    testCompile 'com.typesafe.akka:akka-testkit_2.12:2.5.3'
+    testCompile 'junit:junit:4.12'
 }
 
 mainClassName = "com.lightbend.akka.sample.AkkaQuickstart"
