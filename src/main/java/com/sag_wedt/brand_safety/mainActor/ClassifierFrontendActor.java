@@ -6,6 +6,7 @@ import akka.actor.Terminated;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.sag_wedt.brand_safety.messages.CommonMessages.*;
+import com.sag_wedt.brand_safety.messages.Messages;
 import com.sag_wedt.brand_safety.messages.RespondMessages.*;
 import com.sag_wedt.brand_safety.utils.ResponseWatcher;
 import scala.concurrent.ExecutionContext;
@@ -37,10 +38,10 @@ public class ClassifierFrontendActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(TestMessage.class, msg -> opinionAnalysisClassifierActorList.isEmpty(), msg -> {
-                    log.info("Failure Message. Message: " + msg.getText() + " from: " + sender());
+                .match(Messages.ClassifyWebPage.class, msg -> opinionAnalysisClassifierActorList.isEmpty(), msg -> {
+                    log.info("Failure Message. Message: " + msg.getPageContent() + " from: " + sender());
                 })
-                .match(TestMessage.class, msg -> {
+                .match(Messages.ClassifyWebPage.class, msg -> {
                     responses.add(new ResponseWatcher(sender(), msg));
                     opinionAnalysisClassifierActorCounter++;
                     opinionAnalysisClassifierActorList.get(opinionAnalysisClassifierActorCounter % opinionAnalysisClassifierActorList.size())
@@ -48,7 +49,7 @@ public class ClassifierFrontendActor extends AbstractActor {
                 })
                 .match(Response.class, msg -> {
                     responses.removeIf(r -> r.getMessageId().equals( msg.id));
-                    log.info("Success Message. Message: " + msg + " from: " + sender());
+                    log.info("Success Message. Message: " + msg.toString() + " from: " + sender());
                 })
                 .matchEquals(OPINION_ANALYSIS_ACTOR_REGISTRATION, msg -> {
                     getContext().watch(sender());

@@ -19,9 +19,16 @@ public interface RespondMessages {
         }
     }
 
-    class SuccessResponse extends Response {
+    class SuccessResponse<T> extends Response {
+        public T opinion;
+
         public SuccessResponse(UUID id) {
             super(id);
+        }
+
+        public SuccessResponse(UUID id, T opinion) {
+            super(id);
+            this.opinion = opinion;
         }
     }
 }
